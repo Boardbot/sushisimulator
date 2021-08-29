@@ -1,4 +1,4 @@
-game.CoreGui.FinityUI:Destroy()
+
 
 plr = game.Players.LocalPlayer
 plrWorkspace = game.Workspace[plr.Name]
