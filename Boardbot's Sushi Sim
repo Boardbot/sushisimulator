@@ -1,1 +1,2 @@
+-- i fucked up so i gotta redirect to the actual source
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Boardbot/sushisimulator/main/Boardbot's%20Sushi%20Simulator%20GUI.lua"))()
