@@ -189,5 +189,5 @@ QuickBuySettings:Cheat("Button", "", function()
     
 end, "Press to Buy Item")
 
-CreditSector:Cheat("Label", "Everything in this GUI is made by Boardbot#7385.")
-CreditSector:Cheat("Label", "Feel free to contact me if you have questions or concerns.")
+CreditSector:Cheat("Label", "Everything in this GUI is made by Boardbot#7385")
+CreditSector:Cheat("Label", "Feel free to contact me if you have questions or concerns")
