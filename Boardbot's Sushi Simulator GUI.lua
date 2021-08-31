@@ -61,15 +61,17 @@ local TaskSettingsSector = TaskCategory:Sector("Settings")
 local QuickBuySettings = TaskCategory:Sector("Quick-Buy Settings")
 local CreditSector = CreditCategory:Sector("Credits")
 
+TaskSector:Cheat("Checkbox", "Cook Food", function(cookFood)
+    cookFoodGlobal = cookFood
+    doCooking(cookFoodGlobal)
+end)
+
 TaskSector:Cheat("Checkbox", "Wash Dishes", function(washDishes) 
     washDishesGlobal = washDishes
     doWashing(washDishesGlobal)
 end)
 
-TaskSector:Cheat("Checkbox", "Cook Food", function(cookFood)
-    cookFoodGlobal = cookFood
-    doCooking(cookFoodGlobal)
-end)
+
 
 TaskSector:Cheat("Checkbox", "Rest when No Energy", function(rest)
     restGlobal = rest
