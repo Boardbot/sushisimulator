@@ -172,7 +172,7 @@ function finity.new(isdark, gprojectName, thinProject)
 		finityData.ToggleKey = NewKey
 		
 		if not projectName then
-			self2.tip.Text = "Boardbot's Sushi Shop Simulator GUI v2.0 (Toggle: Right Control)"
+			self2.tip.Text = "Boardbot's Sushi Shop Simulator GUI v2.1 (Toggle: Right Control)"
 		end
 		
 		if finityData.UpConnection then
