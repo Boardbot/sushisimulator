@@ -160,10 +160,7 @@ TaskSector:Cheat("Checkbox", "Rest when No Energy", function(rest)
             repeat wait() until game.Players.LocalPlayer.attributes.Energy.Value >= 198 or rest == false or restGlobal == false
             plr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Running)
             wait(0.1)
-            
-            
-            
-            
+
             if tempCook == true then
                 doCooking(tempCook)
             elseif tempWash == true then
