@@ -34,7 +34,6 @@ end
 for i, v in pairs(game.Workspace.Game:GetDescendants()) do 
     if v:IsA("TextLabel") and v.Name == "Coffee" and v.Parent.Parent.Parent:FindFirstChild("ClickDetector") == nil then
         coffeeCounter = v
-        print(coffeeCounter)
     end
 end
 
@@ -72,7 +71,7 @@ counterProxy = counter1.Base.Attachment.ProximityPrompt
 
 
 function doCooking(cookFood)
-    if cookFood == true then
+    if cookFoodGlobal == true then
         plr.Character.HumanoidRootPart.CFrame = counterProxy.Parent.Parent.Parent.StandHere.CFrame
     end
     
@@ -83,7 +82,7 @@ function doCooking(cookFood)
 end
 
 function doWashing(washDishes)
-    if washDishes == true then
+    if washDishesGlobal == true then
         plr.Character.HumanoidRootPart.CFrame = sinkProxy.Parent.Parent.Parent.StandHere.CFrame
     end
     
@@ -129,7 +128,7 @@ local CreditCategory = FinityWindow:Category("Credits")
 local TaskSector = TaskCategory:Sector("Tasks")
 local TaskSettingsSector = TaskCategory:Sector("Task Settings")
 local QuickBuySettings = TaskCategory:Sector("Quick-Buy Settings")
-local AutoBuySettings = TaskCategory:Sector("Auto-Buy (when ingredient reaches zero)")
+local AutoBuySettings = TaskCategory:Sector("Auto-Stock (when ingredient reaches zero)")
 local CreditSector = CreditCategory:Sector("Credits")
 
 TaskSector:Cheat("Checkbox", "Cook Food", function(cookFood)
@@ -150,8 +149,7 @@ TaskSector:Cheat("Checkbox", "Rest when No Energy", function(rest)
         if game.Players.LocalPlayer.attributes.Energy.Value <= 1 then
             tempCook = cookFoodGlobal
             tempWash = washDishesGlobal
-            cookFoodGlobal = false
-            washDishesGlobal = false
+             
             repeat
                 plr.Character.HumanoidRootPart.CFrame = CFrame.new(-11, 37, -24)
                 wait(1)
@@ -162,13 +160,9 @@ TaskSector:Cheat("Checkbox", "Rest when No Energy", function(rest)
             repeat wait() until game.Players.LocalPlayer.attributes.Energy.Value >= 198 or rest == false or restGlobal == false
             plr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Running)
             wait(0.1)
-            cookFoodGlobal = cookFood
-            washDishesGlobal = washDishes
             
-            cookFoodGlobal = tempCook
-            washDishesGlobalh = tempWash
-            cookFood = tempCook
-            washDishes = tempCook
+            
+            
             
             if tempCook == true then
                 doCooking(tempCook)
