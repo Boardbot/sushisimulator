@@ -7,49 +7,20 @@ paymentMethodGlobalAuto = 0
 counterToUse = "Counter 1"
 globalItemToBuy = "Vegetables"
 sinkProxy = game.Workspace.Game.Sink1.Base.Attachment.ProximityPrompt
+cookFoodCheckbox = false
 
--- get all ingredient counters
-soyaCounter = game:GetService("Workspace").CounterSoyaSauce.Imp.SurfaceGui.SoyaSauce
-platesCounter = game:GetService("Workspace").CounterPlates.Imp.SurfaceGui.Plates
-riceCounter = game:GetService("Workspace").CounterRice.Imp.SurfaceGui.Rice
-vegCounter = game:GetService("Workspace").CounterVegi.Imp.SurfaceGui.Vegetable
---coffeeCounter
--- regFishCounter
--- premFishCounter
-
--- get fish counters
--- i know that there  are ingredient values in replicated storage but i wrote this code before realizing that and i'm too lazy to change it so sorry
-for i, v in pairs(game.Workspace:GetChildren()) do
-    if v.Name == "CounterFish" then 
-        
-        if v.Imp.SurfaceGui:FindFirstChild("Fish") then
-            regFishCounter = v.Imp.SurfaceGui.Fish
-        elseif v.Imp.SurfaceGui:FindFirstChild("PremFish") then 
-            premFishCounter = v.Imp.SurfaceGui.PremFish
-        end
-    end
-end
-
--- get coffee counters
-for i, v in pairs(game.Workspace.Game:GetDescendants()) do 
-    if v:IsA("TextLabel") and v.Name == "Coffee" and v.Parent.Parent.Parent:FindFirstChild("ClickDetector") == nil then
-        coffeeCounter = v
-    end
-end
-
--- check if there are zero of an ingredient
+-- check if there are zero of an ingredient (no longer used)
 function FindAmount(text)
     if tostring(string.find(text, "0")) == "6" then return true else return false end
 end
 
 --autobuy function
-function AutoBuy(ingredientCounter, arg2)
-    if FindAmount(ingredientCounter.Text) then
+function AutoBuy(ingredientAmount, arg2)
+    if ingredientAmount <= 10 then
         game.ReplicatedStorage.BuyStockEvent:FireServer(93273987, arg2)
     end
 end
     
-
 -- Find all sushi counters
 for i,v in pairs(game.Workspace.Game:GetDescendants()) do
     if v:IsA("Part") and v.Position.x == 14 and v.Parent:FindFirstChild("Using") then
@@ -69,44 +40,43 @@ end
 -- default counter is counter 1
 counterProxy = counter1.Base.Attachment.ProximityPrompt
 
-
 function doCooking(cookFood)
-    if cookFoodGlobal == true then
-        plr.Character.HumanoidRootPart.CFrame = counterProxy.Parent.Parent.Parent.StandHere.CFrame
+    if cookFoodGlobal == true and plr.Character.HumanoidRootPart.CFrame ~= counterProxy.Parent.Parent.Parent.StandHere.CFrame and washDishesGlobal ~= true then
+        plr.Character.HumanoidRootPart.CFrame = counterProxy.Parent.Parent.Parent.StandHere.CFrame * CFrame.Angles(0, math.rad(90), 0)
     end
-    
-    while cookFoodGlobal == true do
-        wait()
-        fireproximityprompt(counterProxy, 1)
-    end
+
+    fireproximityprompt(counterProxy, 1)
 end
 
 function doWashing(washDishes)
-    if washDishesGlobal == true then
-        plr.Character.HumanoidRootPart.CFrame = sinkProxy.Parent.Parent.Parent.StandHere.CFrame
+    if washDishesGlobal == true and plr.Character.HumanoidRootPart.CFrame ~= sinkProxy.Parent.Parent.Parent.StandHere.CFrame and cookFoodGlobal ~= true then
+        plr.Character.HumanoidRootPart.CFrame = sinkProxy.Parent.Parent.Parent.StandHere.CFrame * CFrame.Angles(0, math.rad(270), 0)
     end
     
-    while washDishesGlobal == true do
-        wait()
-        fireproximityprompt(sinkProxy, 1)
-    end
+    fireproximityprompt(sinkProxy, 1)
 end
 
 -- check if shop is closed or open. will use this in the future to add an option to stop cooking while the shop is closed
 function isShopClosed(theTime)
-    timeTable = string.split(currentTime, ":")
+    timeTable = string.split(theTime, ":")
     minsAndAMPM = string.split(timeTable[2], " ")
     hour = timeTable[1]
     mins = minsAndAMPM[1]
     AMPM = minsAndAMPM[2]
     
-    if AMPM == "PM" then
+    if AMPM == "PM" and hour ~= "12" then
         addMins = 720
-    elseif AMPM == "AM" then
+    else
         addMins = 0
     end
     
-    totalMins = (tonumber(hour) * 60) + tonumber(mins) + addMins
+    if hour == "12" and AMPM == "AM" then 
+        convertHoursToMins = 0 
+    else 
+        convertHoursToMins = tonumber(hour) * 60 
+    end
+    
+    totalMins = convertHoursToMins + tonumber(mins) + addMins
     
     if totalMins >= 1380 or totalMins < 600 then
         return true
@@ -128,17 +98,27 @@ local CreditCategory = FinityWindow:Category("Credits")
 local TaskSector = TaskCategory:Sector("Tasks")
 local TaskSettingsSector = TaskCategory:Sector("Task Settings")
 local QuickBuySettings = TaskCategory:Sector("Quick-Buy Settings")
-local AutoBuySettings = TaskCategory:Sector("Auto-Stock (when ingredient reaches zero)")
+local AutoBuySettings = TaskCategory:Sector("Auto-Restock (When Ingredient Amount is Low)")
 local CreditSector = CreditCategory:Sector("Credits")
 
 TaskSector:Cheat("Checkbox", "Cook Food", function(cookFood)
     cookFoodGlobal = cookFood
-    doCooking(cookFoodGlobal)
+    cookFoodCheckbox = cookFood
+    
+    while cookFoodGlobal == true do
+        wait()
+        doCooking(cookFoodGlobal)
+    end
 end)
 
 TaskSector:Cheat("Checkbox", "Wash Dishes", function(washDishes) 
     washDishesGlobal = washDishes
-    doWashing(washDishesGlobal)
+    washDishesCheckbox = washDishes
+    
+    while washDishesGlobal == true do 
+        wait()
+        doWashing(washDishesGlobal)
+    end
 end)
 
 -- todo: check if player is sitting at sitting spots
@@ -155,15 +135,19 @@ TaskSector:Cheat("Checkbox", "Rest when No Energy", function(rest)
                 wait(1)
                 plr.Character.HumanoidRootPart.CFrame = CFrame.new(-7, 37, -23)
                 wait(1)
+                plr.Character.HumanoidRootPart.CFrame = CFrame.new(-6, 37, -17)
+                wait(0.5)
+                plr.Character.HumanoidRootPart.CFrame = CFrame.new(-6, 37, -11)
+                wait(0.5)
             until plr.Character.Humanoid:GetState() == Enum.HumanoidStateType.Seated
             
             repeat wait() until game.Players.LocalPlayer.attributes.Energy.Value >= 198 or rest == false or restGlobal == false
             plr.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Running)
             wait(0.1)
 
-            if tempCook == true then
+            if tempCook == true and onlyCookDuringClosedGlobal ~= true then
                 doCooking(tempCook)
-            elseif tempWash == true then
+            elseif tempWash == true and onlyWashDuringClosedGlobal ~= true then
                 doWashing(tempWash)
             end
             
@@ -207,23 +191,42 @@ end, {
     }
 })
 
--- i'll add this later
---[[TaskSettingsSector:Cheat("Checkbox", "Stop Cooking While Shop Closed", function(stopCookAtNight)
+TaskSettingsSector:Cheat("Checkbox", "Only Cook While Shop is Open", function(onlyCookDuringClosed)
+    onlyCookDuringClosedGlobal = onlyCookDuringClosed
     
-    while stopCookAtNight == true do 
-        currentTime = game:GetService("Workspace").Time.SurfaceGui.TextLabel.Text
-        if isShopClosed(currentTime) == true then 
-            cookFoodGlobal = false
-            
+    while onlyCookDuringClosedGlobal == true do 
+        wait()
+        if isShopClosed(game.Workspace.Time.SurfaceGui.TextLabel.Text) == false and cookFoodCheckbox == true then 
+            cookFoodGlobal = true 
+            doCooking(cookFoodGlobal)
+        end
+        
+        if isShopClosed(game.Workspace.Time.SurfaceGui.TextLabel.Text) == true or cookFoodCheckbox == false then
+            cookFoodGlobal = false 
+        end
     end
-    
-end)--]]
+end)
 
-TaskSettingsSector:Cheat("Label", "")
+TaskSettingsSector:Cheat("Checkbox", "Only Wash Dishes While Shop is Closed", function(onlyWashDuringClosed)
+    onlyWashDuringClosedGlobal = onlyWashDuringClosed
+    
+    while onlyWashDuringClosedGlobal == true do 
+        wait()
+        if isShopClosed(game.Workspace.Time.SurfaceGui.TextLabel.Text) == true and washDishesCheckbox == true then 
+            washDishesGlobal = true 
+            doWashing(washDishesGlobal)
+        end
+        
+        if isShopClosed(game.Workspace.Time.SurfaceGui.TextLabel.Text) == false or washDishesCheckbox == false then
+            washDishesGlobal = false 
+        end
+    end
+end)
+
 TaskSettingsSector:Cheat("Label", "")
 
 -- manual quick buy
-QuickBuySettings:Cheat("Dropdown", "Item", function(itemToBuy)
+QuickBuySettings:Cheat("Dropdown", "Ingredient", function(itemToBuy)
     globalItemToBuy = itemToBuy
 end, {
     options = {
@@ -274,6 +277,8 @@ QuickBuySettings:Cheat("Label", "")
 QuickBuySettings:Cheat("Label", "")
 QuickBuySettings:Cheat("Label", "")
 QuickBuySettings:Cheat("Label", " ")
+QuickBuySettings:Cheat("Label", " ")
+QuickBuySettings:Cheat("Label", " ")
 
 --auto buy and stuff
 AutoBuySettings:Cheat("Dropdown", "Payment Method", function(paymentMethodAuto)
@@ -295,10 +300,10 @@ AutoBuySettings:Cheat(
 	"Checkbox", -- Type
 	"Vegetables", -- Name
 	function(buyVeg) -- Callback function
-	    
-	    while buyVeg == true do 
+	    buyVegGlobal = buyVeg
+	    while buyVegGlobal == true do 
 	        wait(0.1)
-	        AutoBuy(vegCounter, 1 + paymentMethodGlobalAuto)
+	        AutoBuy(game:GetService("ReplicatedStorage").Settings.Stock.Vegetable.Value, 1 + paymentMethodGlobalAuto)
 	    end
 end)
 
@@ -306,9 +311,10 @@ AutoBuySettings:Cheat(
 	"Checkbox", -- Type
 	"Regular Fish", -- Name
 	function(buyReg) -- Callback function
-	    while buyReg == true do 
+	    buyRegGlobal = buyReg
+	    while buyRegGlobal == true do 
 	        wait(0.1)
-	        AutoBuy(regFishCounter, 5 + paymentMethodGlobalAuto)
+	        AutoBuy(game:GetService("ReplicatedStorage").Settings.Stock.Fish.Value, 5 + paymentMethodGlobalAuto)
 	    end
 end)
 
@@ -316,9 +322,10 @@ AutoBuySettings:Cheat(
 	"Checkbox", -- Type
 	"Premium Fish", -- Name
 	function(buyPrem) -- Callback function
-	    while buyPrem == true do 
+	    buyPremGlobal = buyPrem
+	    while buyPremGlobal == true do 
 	        wait(0.1)
-	        AutoBuy(premFishCounter, 13 + paymentMethodGlobalAuto)
+	        AutoBuy(game:GetService("ReplicatedStorage").Settings.Stock.PremFish.Value, 13 + paymentMethodGlobalAuto)
 	    end
 end)
 
@@ -326,9 +333,10 @@ AutoBuySettings:Cheat(
 	"Checkbox", -- Type
 	"Rice", -- Name
 	function(buyRice) -- Callback function
-	    while buyRice == true do 
+	    buyRiceGlobal = buyRice
+	    while buyRiceGlobal == true do 
 	        wait(0.1)
-	        AutoBuy(riceCounter, 3 + paymentMethodGlobalAuto)
+	        AutoBuy(game:GetService("ReplicatedStorage").Settings.Stock.Rice.Value, 3 + paymentMethodGlobalAuto)
 	    end
 end)
 
@@ -336,9 +344,10 @@ AutoBuySettings:Cheat(
 	"Checkbox", -- Type
 	"Soya Sauce", -- Name
 	function(buySoya) -- Callback function
-	    while buySoya == true do 
+	    buySoyaGlobal = buySoya
+	    while buySoyaGlobal == true do 
 	        wait(0.1)
-	        AutoBuy(soyaCounter, 9 + paymentMethodGlobalAuto)
+	        AutoBuy(game:GetService("ReplicatedStorage").Settings.Stock.SoyaSauce.Value, 9 + paymentMethodGlobalAuto)
 	    end
 end)
 
@@ -346,12 +355,12 @@ AutoBuySettings:Cheat(
 	"Checkbox", -- Type
 	"Coffee Bags", -- Name
 	function(buyCoffee) -- Callback function
-	    while buyCoffee == true do 
+	    buyCoffeeGlobal = buyCoffee
+	    while buyCoffeeGlobal == true do 
 	        wait(0.1)
-	        AutoBuy(coffeeCounter, 11 + paymentMethodGlobalAuto)
+	        AutoBuy(game:GetService("ReplicatedStorage").Settings.Stock.Coffee.Value, 11 + paymentMethodGlobalAuto)
 	    end
 end)
-
 
 -- fin
 CreditSector:Cheat("Label", "Everything in this GUI is made by Boardbot#7385")
